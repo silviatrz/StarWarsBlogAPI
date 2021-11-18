@@ -30,15 +30,6 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
-
 @app.route('/characters', methods=['GET'])
 def listCharacters():
     list_characters = Character.query.all()
@@ -69,12 +60,22 @@ def getUser(user_id):
     user = User.query.filter_by(id=user_id).first()
     return jsonify(user.serialize()), 200
 
-@app.route('/users/<int:user_id>/favorites', methods=['GET'])
-def listUserFavorites(user_id):
+@app.route('/users/favorites', methods=['GET'])
+def listFavorites():
     characterFavs = Character_Fav.query.all()
     planetFavs = Planet_Fav.query.all()
-    userFavs = [characterFavs.query.filter_by(id=user_id) for fav in characterFavs]
-    return jsonify(user.serialize()), 200
+    favs = [fav.serialize() for fav in characterFavs]
+    favs += [fav.serialize() for fav in planetFavs]
+    return jsonify(favs), 200
+
+@app.route('/users/<int:user_id>/favorites', methods=['GET'])
+def listUserFavorites(user_id):
+    characterFavs = Character_Fav.query.filter_by(id_user=user_id)
+    planetFavs = Planet_Fav.query.filter_by(id_user=user_id)
+    favs = [fav.serialize() for fav in characterFavs]
+    favs += [fav.serialize() for fav in planetFavs]
+    return jsonify(favs), 200
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
