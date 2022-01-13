@@ -76,6 +76,56 @@ def listUserFavorites(user_id):
     favs += [fav.serialize() for fav in planetFavs]
     return jsonify(favs), 200
 
+@app.route('/users/<int:user_id>/favorites/planets/<int:planet_id>', methods=['POST'])
+def setUserPlanetFavorite(user_id, planet_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        raise APIException('User does not exist', status_code=404)
+    planet = Planet.query.filter_by(id=planet_id).first()
+    if planet is None:
+        raise APIException('Planet does not exist', status_code=404)
+    fav = Planet_Fav(id_user=user.id, id_planet=planet.id)
+    db.session.add(fav)
+    db.session.commit()
+    return jsonify(fav.serialize()), 200
+
+@app.route('/users/<int:user_id>/favorites/characters/<int:character_id>', methods=['POST'])
+def setUserCharacterFavorite(user_id, character_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        raise APIException('User does not exist', status_code=404)
+    character = Character.query.filter_by(id=character_id).first()
+    if character is None:
+        raise APIException('Character does not exist', status_code=404)
+    fav = Character_Fav(id_user=user.id, id_character=character.id)
+    db.session.add(fav)
+    db.session.commit()
+    return jsonify(fav.serialize()), 200
+
+@app.route('/users/<int:user_id>/favorites/planets/<int:planet_id>', methods=['DELETE'])
+def deleteUserPlanetFavorite(user_id, planet_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        raise APIException('User does not exist', status_code=404)
+    fav = Planet_Fav.query.filter_by(id_user=user.id, id_planet=planet_id).first()
+    if fav is None:
+        raise APIException('Planet does not exist as favorite', status_code=404)
+    db.session.delete(fav)
+    db.session.commit()
+    return "Planet deleted as favorite", 200
+
+@app.route('/users/<int:user_id>/favorites/characters/<int:character_id>', methods=['DELETE'])
+def deleteUserCharacterFavorite(user_id, character_id):
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        raise APIException('User does not exist', status_code=404)
+    fav = Character_Fav.query.filter_by(id_user=user.id, id_character=character_id).first()
+    if fav is None:
+        raise APIException('Character does not exist as favorite', status_code=404)
+    db.session.delete(fav)
+    db.session.commit()
+    return "Character deleted as favorite", 200
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
